@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SurfaceRecorder</string>
+    <string name="permission_text">Allow Device Permissions</string>
 </resources>
