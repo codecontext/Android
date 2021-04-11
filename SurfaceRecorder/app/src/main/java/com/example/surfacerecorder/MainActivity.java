@@ -133,25 +133,28 @@ public class MainActivity extends AppCompatActivity
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if(requestCode != REQUEST_CODE)
+        if(requestCode == REQUEST_CODE)
         {
-            return;
+            if (resultCode != RESULT_OK)
+            {
+                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
+                toggleButton.setChecked(false);
+            }
+            else
+            {
+                mediaProjectionCallback = new MediaProjectionCallback();
+                mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, data);
+                mediaProjection.registerCallback(mediaProjectionCallback, null);
+
+                virtualDisplay = createVirtualDisplay();
+                mediaRecorder.start();
+
+                chronometer.setBase(SystemClock.elapsedRealtime());
+                chronometer.start();
+
+                recordText.setVisibility(View.VISIBLE);
+            }
         }
-
-        if(resultCode != RESULT_OK)
-        {
-            Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
-
-            toggleButton.setChecked(false);
-            return;
-        }
-
-        mediaProjectionCallback = new MediaProjectionCallback();
-        mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, data);
-        mediaProjection.registerCallback(mediaProjectionCallback, null);
-
-        virtualDisplay = createVirtualDisplay();
-        mediaRecorder.start();
     }
 
     private VirtualDisplay createVirtualDisplay()
@@ -164,9 +167,9 @@ public class MainActivity extends AppCompatActivity
     {
         if(((ToggleButton) view).isChecked())
         {
-            recordText.setVisibility(View.VISIBLE);
-            chronometer.setBase(SystemClock.elapsedRealtime());
-            chronometer.start();
+            //recordText.setVisibility(View.VISIBLE);
+            //chronometer.setBase(SystemClock.elapsedRealtime());
+            //chronometer.start();
 
             initiateRecorder();
             startScreenSharing();
@@ -177,9 +180,10 @@ public class MainActivity extends AppCompatActivity
             mediaRecorder.stop();
             mediaRecorder.reset();
 
-            stopScreenSharing();
             chronometer.stop();
             chronometer.setBase(SystemClock.elapsedRealtime());
+
+            stopScreenSharing();
         }
     }
 
@@ -264,7 +268,7 @@ public class MainActivity extends AppCompatActivity
             mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
             mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
 
-            videoUrl = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MOVIES) +
+            videoUrl = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +
                     "/KD " + new SimpleDateFormat("dd-MM-yyyy-hh-mm-ss").format(new Date()) + ".mp4";
 
             mediaRecorder.setOutputFile(videoUrl);
