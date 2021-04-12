@@ -15,38 +15,38 @@
             android:id="@+id/tvRecording"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Recording Surface..."
-            android:visibility="invisible"
-            android:layout_marginTop="100dp"
-            android:textSize="25dp"
-            android:textColor="@color/black"
-            android:textAlignment="center"
+            android:layout_gravity="center"
+            android:layout_marginTop="50dp"
             android:fontFamily="sans-serif-condensed-medium"
-            />
+            android:text="Recording Surface"
+            android:textAlignment="center"
+            android:textColor="@color/black"
+            android:textSize="20dp"
+            android:visibility="invisible" />
 
         <Chronometer
             android:id="@+id/cmTimer"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:textSize="25dp"
-            android:layout_marginTop="50dp"
-            android:textColor="@color/black"
             android:layout_gravity="center"
+            android:layout_marginTop="20dp"
             android:fontFamily="sans-serif-condensed-medium"
-            />
+            android:gravity="center"
+            android:textColor="@color/black"
+            android:textSize="25dp" />
 
         <ToggleButton
             android:id="@+id/tbSwitch"
             android:layout_width="150dp"
             android:layout_height="150dp"
-            android:layout_marginTop="150dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="100dp"
+            android:background="@drawable/round_layout"
+            android:baselineAligned="false"
+            android:textColor="@color/black"
             android:textOff="RECORD"
             android:textOn="STOP"
-            android:textColor="@color/black"
-            android:textSize="30dp"
-            android:layout_gravity="center"
-            android:background="@drawable/round_layout"
-            />
+            android:textSize="30dp" />
 
     </LinearLayout>
 

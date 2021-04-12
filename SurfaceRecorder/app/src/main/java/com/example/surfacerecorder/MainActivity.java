@@ -1,11 +1,5 @@
 package com.example.surfacerecorder;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
@@ -29,7 +23,14 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+
 import com.google.android.material.snackbar.Snackbar;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -47,16 +48,20 @@ public class MainActivity extends AppCompatActivity
     private MediaProjection mediaProjection;
     private VirtualDisplay virtualDisplay;
 
+    private static int DISPLAY_WIDTH;
+    private static int DISPLAY_HEIGHT;
+
     private static final String TAG = "MainActivity";
     private static final String LOG_TAG = "KD";
 
-    private static final int DISPLAY_WIDTH = 720;
-    private static final int DISPLAY_HEIGHT = 1280;
-
     private static final int REQUEST_PERMISSION = 10;
-    private static final int REQUEST_CODE = 1000;
+    private static final int REQUEST_CODE = 1234;
 
-    private String videoUrl = "";
+    private String videoUrl = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM) +
+            "/KD_" + new SimpleDateFormat("dd-MM-yyyy-hh-mm-ss").format(new Date()) + ".mp4";
+
+    private static final int VIDEO_ENCODING_BITRATE = 512*10000;
+    private static final int VIDEO_FRAMERATE = 24;
 
     private static final SparseIntArray ORIENTATION = new SparseIntArray();
 
@@ -81,6 +86,9 @@ public class MainActivity extends AppCompatActivity
         DisplayMetrics metrics = new DisplayMetrics();
         getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
+        DISPLAY_WIDTH = metrics.widthPixels;
+        DISPLAY_HEIGHT = metrics.heightPixels;
+
         screenDessity = metrics.densityDpi;
         mediaRecorder = new MediaRecorder();
         mediaProjectionManager = (MediaProjectionManager)getSystemService(Context.MEDIA_PROJECTION_SERVICE);
@@ -101,15 +109,18 @@ public class MainActivity extends AppCompatActivity
                        ActivityCompat.shouldShowRequestPermissionRationale(MainActivity.this,
                             Manifest.permission.RECORD_AUDIO))
                     {
-                         /* If Ext Storage Write or Audio Record both permissions are not granted,
-                            show the Snackbar to request the permissions */
-                        Snackbar.make(findViewById(android.R.id.content), R.string.permission_text, Snackbar.LENGTH_INDEFINITE).setAction("ENABLE", new View.OnClickListener()
+                        /* If Ext Storage Write or Audio Record both permissions are not granted,
+                           show the Snackbar to request the permissions */
+                        Snackbar.make(findViewById(android.R.id.content), R.string.permission_text,
+                                Snackbar.LENGTH_INDEFINITE).setAction("ENABLE", new View.OnClickListener()
                         {
                             @Override
                             public void onClick(View v)
                             {
                                 ActivityCompat.requestPermissions(MainActivity.this,
-                                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO}, REQUEST_PERMISSION);
+                                        new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                                     Manifest.permission.RECORD_AUDIO},
+                                                     REQUEST_PERMISSION);
                             }
                         }).show();
 
@@ -118,7 +129,10 @@ public class MainActivity extends AppCompatActivity
                     else
                     {
                         ActivityCompat.requestPermissions(MainActivity.this,
-                                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.RECORD_AUDIO}, REQUEST_PERMISSION);
+                                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                                             Manifest.permission.RECORD_AUDIO,
+                                             Manifest.permission.FOREGROUND_SERVICE},
+                                             REQUEST_PERMISSION);
                     }
                 }
                 else
@@ -130,17 +144,13 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data)
+    {
         super.onActivityResult(requestCode, resultCode, data);
 
         if(requestCode == REQUEST_CODE)
         {
-            if (resultCode != RESULT_OK)
-            {
-                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
-                toggleButton.setChecked(false);
-            }
-            else
+            if (resultCode == RESULT_OK)
             {
                 mediaProjectionCallback = new MediaProjectionCallback();
                 mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, data);
@@ -154,13 +164,19 @@ public class MainActivity extends AppCompatActivity
 
                 recordText.setVisibility(View.VISIBLE);
             }
+            else
+            {
+                Toast.makeText(this, "Permission Denied", Toast.LENGTH_SHORT).show();
+                toggleButton.setChecked(false);
+            }
         }
     }
 
     private VirtualDisplay createVirtualDisplay()
     {
         return mediaProjection.createVirtualDisplay(TAG, DISPLAY_WIDTH, DISPLAY_HEIGHT, screenDessity,
-                DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR, mediaRecorder.getSurface(), null, null);
+                DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR, mediaRecorder.getSurface(),
+                null, null);
     }
 
     private void initiateSurfaceRecord(View view)
@@ -171,7 +187,7 @@ public class MainActivity extends AppCompatActivity
             //chronometer.setBase(SystemClock.elapsedRealtime());
             //chronometer.start();
 
-            initiateRecorder();
+            prepareRecorder();
             startScreenSharing();
         }
         else
@@ -188,7 +204,8 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults)
+    {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 
         switch (requestCode)
@@ -258,25 +275,21 @@ public class MainActivity extends AppCompatActivity
             mediaProjection.stop();
             mediaProjection = null;
         }
-        Toast.makeText(this, "Recording Saved", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Recording Saved", Toast.LENGTH_LONG).show();
     }
 
-    private void initiateRecorder()
+    private void prepareRecorder()
     {
         try {
             mediaRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
             mediaRecorder.setVideoSource(MediaRecorder.VideoSource.SURFACE);
             mediaRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
-
-            videoUrl = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) +
-                    "/KD " + new SimpleDateFormat("dd-MM-yyyy-hh-mm-ss").format(new Date()) + ".mp4";
-
             mediaRecorder.setOutputFile(videoUrl);
             mediaRecorder.setVideoSize(DISPLAY_WIDTH, DISPLAY_HEIGHT);
             mediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
             mediaRecorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
-            mediaRecorder.setVideoEncodingBitRate(512*1000);
-            mediaRecorder.setVideoFrameRate(2);
+            mediaRecorder.setVideoEncodingBitRate(VIDEO_ENCODING_BITRATE);
+            mediaRecorder.setVideoFrameRate(VIDEO_FRAMERATE);
 
             int rotation = getWindowManager().getDefaultDisplay().getRotation();
             int orientation = ORIENTATION.get(rotation + 90);
