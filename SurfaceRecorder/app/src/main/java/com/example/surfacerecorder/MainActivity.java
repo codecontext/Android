@@ -1,9 +1,12 @@
 package com.example.surfacerecorder;
 
 import android.Manifest;
+import android.animation.ArgbEvaluator;
+import android.animation.ObjectAnimator;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.hardware.display.DisplayManager;
 import android.hardware.display.VirtualDisplay;
 import android.media.MediaRecorder;
@@ -18,6 +21,7 @@ import android.util.DisplayMetrics;
 import android.util.SparseIntArray;
 import android.view.Surface;
 import android.view.View;
+import android.view.animation.Animation;
 import android.widget.Chronometer;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -189,6 +193,8 @@ public class MainActivity extends AppCompatActivity
 
             prepareRecorder();
             startScreenSharing();
+
+            animateTextbox(true);
         }
         else
         {
@@ -274,6 +280,8 @@ public class MainActivity extends AppCompatActivity
             mediaProjection.unregisterCallback(mediaProjectionCallback);
             mediaProjection.stop();
             mediaProjection = null;
+
+            animateTextbox(false);
         }
         Toast.makeText(this, "Recording Saved", Toast.LENGTH_LONG).show();
     }
@@ -316,6 +324,25 @@ public class MainActivity extends AppCompatActivity
 
             mediaProjection = null;
             stopScreenSharing();
+        }
+    }
+
+    private void animateTextbox(boolean state)
+    {
+        ObjectAnimator animator = ObjectAnimator.ofInt(recordText, "backgroundColor", Color.GRAY, Color.TRANSPARENT);
+
+        animator.setDuration(1000);
+        animator.setEvaluator(new ArgbEvaluator());
+        animator.setRepeatMode(Animation.REVERSE);
+        animator.setRepeatCount(Animation.INFINITE);
+
+        if(state == true)
+        {
+            animator.start();
+        }
+        else
+        {
+            animator.cancel();
         }
     }
 }

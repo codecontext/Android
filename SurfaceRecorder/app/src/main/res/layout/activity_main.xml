@@ -20,7 +20,7 @@
             android:fontFamily="sans-serif-condensed-medium"
             android:text="Recording Surface"
             android:textAlignment="center"
-            android:textColor="@color/black"
+            android:textColor="@color/white"
             android:textSize="20dp"
             android:visibility="invisible" />
 
