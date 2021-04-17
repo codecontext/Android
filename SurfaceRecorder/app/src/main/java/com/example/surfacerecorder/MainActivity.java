@@ -52,6 +52,7 @@ public class MainActivity extends AppCompatActivity
     private MediaProjection mediaProjection;
     private VirtualDisplay virtualDisplay;
 
+
     private static int DISPLAY_WIDTH;
     private static int DISPLAY_HEIGHT;
 
@@ -329,7 +330,7 @@ public class MainActivity extends AppCompatActivity
 
     private void animateTextbox(boolean state)
     {
-        ObjectAnimator animator = ObjectAnimator.ofInt(recordText, "backgroundColor", Color.GRAY, Color.TRANSPARENT);
+        ObjectAnimator animator = ObjectAnimator.ofInt(recordText, "backgroundColor", Color.BLACK, Color.TRANSPARENT);
 
         animator.setDuration(1000);
         animator.setEvaluator(new ArgbEvaluator());

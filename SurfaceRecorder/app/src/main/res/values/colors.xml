@@ -9,4 +9,7 @@
     <color name="white">#FFFFFFFF</color>
     <color name="lapis">#FF2832C2</color>
     <color name="pastel_red">#FFFF6961</color>
+    <color name="yellow">#FFFFFF00</color>
+    <color name="turquoise_green">#FF0F7D63</color>
+
 </resources>
