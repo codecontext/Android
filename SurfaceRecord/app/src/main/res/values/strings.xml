@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">SurfaceRec</string>
+    <string name="exit_text">Exit</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
+</resources>
